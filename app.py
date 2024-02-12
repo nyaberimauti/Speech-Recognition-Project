@@ -18,7 +18,6 @@ emotion_model = joblib.load('emotion_model.pkl')
 # Function to perform speaker diarization and emotion detection
 def process_audio(audio_file):
     # Perform speaker diarization
-    # Assuming pipeline and emotion_model are defined elsewhere
     diarization = pipeline(audio_file, min_speakers=1, max_speakers=4)
     # Iterate over each speaker segment
     for segment, speaker_label in diarization.itertracks(yield_label=True):
