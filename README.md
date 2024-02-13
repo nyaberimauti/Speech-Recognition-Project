@@ -1,6 +1,6 @@
 # Speech Emotion Recognition
 
-![Speech Emotion Recognition]()
+![Speech Emotion Recognition]('Speech-Recognition.png')
 
 ## Table of Contents
 
