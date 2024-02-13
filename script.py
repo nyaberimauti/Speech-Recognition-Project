@@ -76,8 +76,14 @@ class SpeakerEmotionDetector:
 
     def split_audio(self, audio_file, segment_length=10):
         audio = AudioSegment.from_file(audio_file)
+        audio_duration_secs = len(audio) / 1000  # Convert milliseconds to seconds
+
+        # Check if audio duration is less than 25 seconds
+        if audio_duration_secs < 25:
+            return [(0, len(audio))]  # Return a single segment covering the entire audio
+
         segment_ms = segment_length * 1000
-        num_segments = np.ceil(len(audio) / segment_ms).astype(int)
+        num_segments = np.ceil(audio_duration_secs / segment_length).astype(int)
         segments = []
         for i in range(num_segments):
             start_time = i * segment_ms
@@ -124,6 +130,24 @@ class SpeakerEmotionDetector:
 
         return features_reduced
 
+    # def process_audio(self, audio_file):
+    #     # Check if the uploaded file is not None
+    #     if audio_file is None:
+    #         st.write("No audio file uploaded.")
+    #         return
+
+    #     # Preprocess the audio file
+    #     processed_features = self.preprocess_audio(audio_file)
+
+    #     # Reshape the processed features to have a single sample
+    #     i = int(len(processed_features) / 28)
+    #     processed_features = processed_features.reshape(-1, i)
+
+    #     # Perform emotion detection on the processed features
+    #     emotion = self.emotion_model.predict(processed_features)
+
+    #     # Display the detected emotion
+    #     st.write(f"Emotion detected is: {emotion}")
     def process_audio(self, audio_file):
         # Check if the uploaded file is not None
         if audio_file is None:
@@ -133,14 +157,21 @@ class SpeakerEmotionDetector:
         # Preprocess the audio file
         processed_features = self.preprocess_audio(audio_file)
 
-        # Reshape the processed features to have a single sample
-        processed_features = processed_features.reshape(-1, 100)
+        # Truncate the processed features if its size exceeds 100 dimensions
+        if processed_features.size > 100:
+            processed_features = processed_features[:100]
+
+        # Reshape the processed features to have at most 100 dimensions
+        num_columns = min(100, processed_features.size)
+        num_rows = -1 if processed_features.size % num_columns == 0 else -(processed_features.size // num_columns + 1)
+        processed_features = processed_features.reshape(num_rows, num_columns)
 
         # Perform emotion detection on the processed features
         emotion = self.emotion_model.predict(processed_features)
 
+
         # Display the detected emotion
-        st.write(f"Emotion detected: {emotion}")
+        st.write(f"Emotion detected is: {emotion}")
 
 # Streamlit UI
 st.title('Speaker Emotion Detection')
@@ -151,4 +182,4 @@ if uploaded_file is not None:
     st.audio(uploaded_file, format='audio/wav')
     st.write("Processing...")
     sed.process_audio(uploaded_file)
-    st.write("Processing complete.")
+    st.write("Done.")
