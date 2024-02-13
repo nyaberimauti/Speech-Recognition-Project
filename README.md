@@ -1,6 +1,6 @@
 # Speech Emotion Recognition
 
-![Speech Emotion Recognition](https://github.com/aminahagi/Recommendation-System/assets/117739559/8f1bc681-ce60-4ad7-9943-1d13abf42f7e)
+![Speech Emotion Recognition]()
 
 ## Table of Contents
 
