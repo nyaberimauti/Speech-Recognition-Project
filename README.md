@@ -47,11 +47,11 @@ To run this project, you need the following prerequisites:
 
 You can install these packages using pip:
 
-- pip install pandas
-- pip install scikit-learn
-- pip install pyannote.audio
-- pip install joblib
-- pip install librosa
+        pip install pandas
+        pip install scikit-learn
+        pip install pyannote.audio
+        pip install joblib
+        pip install librosa
 ## Installation
 Clone this repository:
 
