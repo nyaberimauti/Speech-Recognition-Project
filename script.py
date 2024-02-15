@@ -69,7 +69,7 @@ from sklearn.decomposition import TruncatedSVD
 class SpeakerEmotionDetector:
     def __init__(self, sampling_rate = 16000, n_components = 100):
         self.pipeline = Pipeline.from_pretrained('pyannote/speaker-diarization-3.1', use_auth_token='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')
-        self.emotion_model = joblib.load('emotion_model.pkl')
+        self.emotion_model = joblib.load('best_svm_model.pkl')
         self.sampling_rate = sampling_rate
         self.svd = TruncatedSVD(n_components=n_components)
 
@@ -93,7 +93,7 @@ class SpeakerEmotionDetector:
 
     def preprocess_audio(self, audio_file):
         # Load audio file
-        audio, _ = librosa.load(audio_file, sr=None)
+        audio, sr = librosa.load(audio_file, sr=None)
 
         # Trim leading and trailing silence
         audio = librosa.effects.trim(audio)[0]
@@ -102,31 +102,35 @@ class SpeakerEmotionDetector:
         audio = librosa.util.normalize(audio)
 
         # Extract MFCCs (Mel-Frequency Cepstral Coefficients)
-        mfccs = librosa.feature.mfcc(y=audio, sr=self.sampling_rate, n_mfcc=13)
+        mfccs = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
+
+        # Calculate other features (pitch, energy, spectral centroid, spectral bandwidth, spectral contrast)
+        pitches, magnitudes = librosa.piptrack(y=audio, sr=sr)
+        pitch = np.mean(pitches)
+        energy = np.mean(librosa.feature.rms(y=audio))
+        spectral_centroid = np.mean(librosa.feature.spectral_centroid(y=audio, sr=sr))
+        spectral_bandwidth = np.mean(librosa.feature.spectral_bandwidth(y=audio, sr=sr))
+        spectral_contrast = np.mean(librosa.feature.spectral_contrast(y=audio, sr=sr))
 
         # Flatten MFCCs to ensure consistent shape
         mfccs_flat = mfccs.flatten()
 
-        # Calculate other features (pitch, energy, spectral centroid, spectral bandwidth, spectral contrast)
-        pitch, _ = librosa.piptrack(y=audio, sr=self.sampling_rate)
-        pitch = np.mean(pitch)
-        energy = np.mean(librosa.feature.rms(y=audio))
-        spectral_centroid = np.mean(librosa.feature.spectral_centroid(y=audio, sr=self.sampling_rate))
-        spectral_bandwidth = np.mean(librosa.feature.spectral_bandwidth(y=audio, sr=self.sampling_rate))
-        spectral_contrast = np.mean(librosa.feature.spectral_contrast(y=audio, sr=self.sampling_rate))
-
-        # Combine all features into a single 1D array
+        # Combine all other features into a single 1D array
         features_combined = np.hstack((mfccs_flat, pitch, energy, spectral_centroid, spectral_bandwidth, spectral_contrast))
 
-        # Pad features_combined to ensure consistent shape
-        max_length = len(features_combined)
-        target_length = 2800  # Adjust as needed
-        if max_length < target_length:
-            padding_width = target_length - max_length
-            features_combined = np.pad(features_combined, (0, padding_width), mode='constant')
+        # Update max_length if necessary
+        max_length = 2000  # Specify the maximum length
+        
+        # Pad the features if they are shorter than the maximum length
+        if len(features_combined) < max_length:
+            padding_width = max_length - len(features_combined)
+            padded_features = np.pad(features_combined, (0, padding_width), mode='constant')
 
-        # Apply TruncatedSVD for dimensionality reduction
-        features_reduced = np.array(list(features_combined))
+        features_reshaped = padded_features.reshape(1, -1)
+
+        st.write("Shape of features_reshaped:", features_reshaped.shape)
+
+        features_reduced = features_reshaped
 
         return features_reduced
 
@@ -157,14 +161,7 @@ class SpeakerEmotionDetector:
         # Preprocess the audio file
         processed_features = self.preprocess_audio(audio_file)
 
-        # Truncate the processed features if its size exceeds 100 dimensions
-        if processed_features.size > 100:
-            processed_features = processed_features[:100]
-
-        # Reshape the processed features to have at most 100 dimensions
-        num_columns = min(100, processed_features.size)
-        num_rows = -1 if processed_features.size % num_columns == 0 else -(processed_features.size // num_columns + 1)
-        processed_features = processed_features.reshape(num_rows, num_columns)
+        st.write("Shape of processed_features:", processed_features.shape)
 
         # Perform emotion detection on the processed features
         emotion = self.emotion_model.predict(processed_features)
@@ -172,7 +169,23 @@ class SpeakerEmotionDetector:
 
         # Display the detected emotion
         st.write(f"Emotion detected is: {emotion}")
+    def speaker_diarization(self, audio_file):
+        # Check if the uploaded file is not None
+        if audio_file is None:
+            st.write("No audio file uploaded.")
+            return
 
+        # Preprocess the audio file
+        processed_features = self.preprocess_audio(audio_file)
+
+        st.write("Shape of processed_features:", processed_features.shape)
+
+        # Perform emotion detection on the processed features
+        emotion = self.emotion_model.predict(processed_features)
+
+
+        # Display the detected emotion
+        st.write(f"Emotion detected is: {emotion}")
 # Streamlit UI
 st.title('Speaker Emotion Detection')
 sed = SpeakerEmotionDetector()
