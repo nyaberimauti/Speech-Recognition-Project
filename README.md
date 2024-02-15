@@ -1,6 +1,6 @@
 # Speech Emotion Recognition
 
-![Speech Emotion Recognition]()
+![Speech Emotion Recognition](Speech-Recognition-analysis.png)
 
 ## Table of Contents
 
