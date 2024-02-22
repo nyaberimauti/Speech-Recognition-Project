@@ -90,6 +90,8 @@ To utilize the speaker emotion detection model, follow the instructions provided
 
 
 ## Conclusion
+
+
 The tuned Support Vector Machine (SVM) model trained on Truncated Singular Value Decomposition (SVD) reduced features achieved promising results with a test accuracy of approximately 86.1%. The model was able to classify emotions from audio recordings with good accuracy, demonstrating its potential utility in emotion recognition tasks.
 
 However, there is room for improvement in terms of model performance and generalization. Further refinement of the model through hyperparameter tuning, feature engineering, and data augmentation can potentially enhance its accuracy and robustness. Additionally, exploring ensemble methods and regularization techniques could lead to further improvements in model performance.
