@@ -2724,7 +2724,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "A seperate deployment script is available in a separate file script.py run it using `python script.py`."
+    "##This deployment script is available in a separate file script.py"
    ]
   }
  ],
@@ -2744,7 +2744,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.11.4"
+   "version": "3.11.5"
   }
  },
  "nbformat": 4,
